@@ -1,53 +1,65 @@
-// Copyright (c) 2025 mykaa
-#pragma once
+#ifndef NSBACKPACK_ITEM_H
+#define NSBACKPACK_ITEM_H
 
 #include "CoreMinimal.h"
-#include "Engine/DataAsset.h"
-#include "NsBackpackItemData.generated.h"
+#include "UObject/Object.h"
+#include "Engine/DataTable.h"
+#include "NsBackpackItem.generated.h"
 
 class UStaticMesh;
+class AActor;
 
-/** Data for an inventory item. */
-UCLASS(BlueprintType)
-class NSBACKPACK_API UNsBackpackItemData : public UDataAsset
+class UNsBackpackItem;
+
+USTRUCT(BlueprintType)
+struct FNsBackpackItemRow : public FTableRowBase
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    TSubclassOf<UNsBackpackItem> ItemClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    int32 ID = 0;
+};
+
+/** Base inventory item object with overrideable behaviour. */
+UCLASS(Blueprintable, BlueprintType)
+class NSBACKPACK_API UNsBackpackItem : public UObject
 {
     GENERATED_BODY()
 public:
-    /** Unique numeric identifier. */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item")
+    /** Identifier assigned from the item table. */
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Item")
     int32 ID = 0;
 
-    /** Display name. */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item")
     FText Name;
 
-    /** Description text. */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item")
     FText Description;
 
-    /** Thumbnail image. */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item")
     UTexture2D* Image = nullptr;
 
-    /** If true this item can stack with items of the same type. */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item")
     bool bStackable = false;
 
-    /** Maximum items that can be stacked together. */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item", meta=(EditCondition="bStackable", ClampMin="1"))
     int32 MaxStackSize = 1;
 
-    /** Optional mesh if item can be equipped. */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Equipable")
     UStaticMesh* Mesh = nullptr;
 
-    /** Optional actor class if item can be spawned into the world. */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Spawnable")
     TSubclassOf<AActor> ActorToSpawn;
 
-    /** Override to perform item specific behaviour. */
     UFUNCTION(BlueprintNativeEvent, Category="Item")
     void Use(AActor* Target);
+
+#if WITH_EDITOR
+    virtual void PostInitProperties() override;
+#endif
 };
 
 /** Struct representing a stack of items. */
@@ -57,13 +69,13 @@ struct FNsBackpackItemStack
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UNsBackpackItemData* Item = nullptr;
+    UNsBackpackItem* Item = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 Quantity = 0;
 
     FNsBackpackItemStack() {}
-    FNsBackpackItemStack(UNsBackpackItemData* InItem, int32 InQuantity)
-        : Item(InItem), Quantity(InQuantity) {}
+    FNsBackpackItemStack(UNsBackpackItem* InItem, int32 InQuantity) : Item(InItem), Quantity(InQuantity) {}
 };
 
+#endif // NSBACKPACK_ITEM_H

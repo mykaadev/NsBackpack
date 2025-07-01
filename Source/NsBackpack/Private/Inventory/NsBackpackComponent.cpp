@@ -1,9 +1,12 @@
 // Copyright (c) 2025 mykaa
 #include "Inventory/NsBackpackComponent.h"
+#include "Inventory/NsBackpackSettings.h"
+#include "Inventory/NsBackpackItemTable.h"
 
 UNsBackpackComponent::UNsBackpackComponent()
 {
     PrimaryComponentTick.bCanEverTick = false;
+    LoadItemDatabase();
 }
 
 void UNsBackpackComponent::ExpandBackpack(int32 AdditionalSlots)
@@ -11,14 +14,14 @@ void UNsBackpackComponent::ExpandBackpack(int32 AdditionalSlots)
     BackpackSlots += FMath::Max(0, AdditionalSlots);
 }
 
-bool UNsBackpackComponent::GiveItem(UNsBackpackItemData* ItemData, int32 Quantity, bool bPersistent)
+bool UNsBackpackComponent::GiveItem(UNsBackpackItem* ItemData, int32 Quantity, bool bPersistent)
 {
     TArray<FNsBackpackItemStack>& Target = bPersistent ? PersistentItems : BackpackItems;
     int32 MaxSlots = bPersistent ? INDEX_NONE : BackpackSlots;
     return GiveToList(Target, ItemData, Quantity, MaxSlots);
 }
 
-bool UNsBackpackComponent::RemoveItem(UNsBackpackItemData* ItemData, int32 Quantity, bool bPersistent)
+bool UNsBackpackComponent::RemoveItem(UNsBackpackItem* ItemData, int32 Quantity, bool bPersistent)
 {
     TArray<FNsBackpackItemStack>& Target = bPersistent ? PersistentItems : BackpackItems;
     return RemoveFromList(Target, ItemData, Quantity);
@@ -26,7 +29,7 @@ bool UNsBackpackComponent::RemoveItem(UNsBackpackItemData* ItemData, int32 Quant
 
 bool UNsBackpackComponent::GiveItemByID(int32 ItemID, int32 Quantity, bool bPersistent)
 {
-    if (UNsBackpackItemData** Found = ItemDatabase.Find(ItemID))
+    if (UNsBackpackItem** Found = ItemDatabase.Find(ItemID))
     {
         return GiveItem(*Found, Quantity, bPersistent);
     }
@@ -35,14 +38,24 @@ bool UNsBackpackComponent::GiveItemByID(int32 ItemID, int32 Quantity, bool bPers
 
 bool UNsBackpackComponent::RemoveItemByID(int32 ItemID, int32 Quantity, bool bPersistent)
 {
-    if (UNsBackpackItemData** Found = ItemDatabase.Find(ItemID))
+    if (UNsBackpackItem** Found = ItemDatabase.Find(ItemID))
     {
         return RemoveItem(*Found, Quantity, bPersistent);
     }
     return false;
 }
 
-bool UNsBackpackComponent::GiveToList(TArray<FNsBackpackItemStack>& List, UNsBackpackItemData* ItemData, int32 Quantity, int32 MaxSlots)
+bool UNsBackpackComponent::GiveItemByClass(TSubclassOf<UNsBackpackItem> ItemClass, int32 Quantity, bool bPersistent)
+{
+    return ItemClass ? GiveItem(ItemClass->GetDefaultObject<UNsBackpackItem>(), Quantity, bPersistent) : false;
+}
+
+bool UNsBackpackComponent::RemoveItemByClass(TSubclassOf<UNsBackpackItem> ItemClass, int32 Quantity, bool bPersistent)
+{
+    return ItemClass ? RemoveItem(ItemClass->GetDefaultObject<UNsBackpackItem>(), Quantity, bPersistent) : false;
+}
+
+bool UNsBackpackComponent::GiveToList(TArray<FNsBackpackItemStack>& List, UNsBackpackItem* ItemData, int32 Quantity, int32 MaxSlots)
 {
     if (!ItemData || Quantity <= 0)
     {
@@ -87,7 +100,7 @@ bool UNsBackpackComponent::GiveToList(TArray<FNsBackpackItemStack>& List, UNsBac
     return true;
 }
 
-bool UNsBackpackComponent::RemoveFromList(TArray<FNsBackpackItemStack>& List, UNsBackpackItemData* ItemData, int32 Quantity)
+bool UNsBackpackComponent::RemoveFromList(TArray<FNsBackpackItemStack>& List, UNsBackpackItem* ItemData, int32 Quantity)
 {
     if (!ItemData || Quantity <= 0)
     {
@@ -119,5 +132,40 @@ bool UNsBackpackComponent::RemoveFromList(TArray<FNsBackpackItemStack>& List, UN
     }
 
     return Remaining <= 0;
+}
+
+void UNsBackpackComponent::LoadItemDatabase()
+{
+    ItemDatabase.Empty();
+    const UNsBackpackSettings* Settings = GetDefault<UNsBackpackSettings>();
+    if (!Settings || !Settings->ItemTable.IsValid())
+    {
+        return;
+    }
+
+    UNsBackpackItemTable* Table = Settings->ItemTable.LoadSynchronous();
+    if (!Table)
+    {
+        return;
+    }
+
+    TArray<FName> RowNames = Table->GetRowNames();
+    RowNames.Sort();
+    for (int32 Index = 0; Index < RowNames.Num(); ++Index)
+    {
+        if (FNsBackpackItemRow* Row = Table->FindRow<FNsBackpackItemRow>(RowNames[Index], TEXT("")))
+        {
+            Row->ID = Index;
+            if (Row->ItemClass)
+            {
+                UNsBackpackItem* DefaultObj = Row->ItemClass->GetDefaultObject<UNsBackpackItem>();
+                if (DefaultObj)
+                {
+                    DefaultObj->ID = Index;
+                    ItemDatabase.Add(Index, DefaultObj);
+                }
+            }
+        }
+    }
 }
 
