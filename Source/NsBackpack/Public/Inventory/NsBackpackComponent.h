@@ -3,7 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Inventory/NsBackpackItemData.h"
+#include "Inventory/NsBackpackItem.h"
 #include "NsBackpackComponent.generated.h"
 
 /** Component handling backpack and persistent item storage. */
@@ -28,7 +28,7 @@ public:
 
     /** Database used to resolve item IDs. */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory")
-    TMap<int32, UNsBackpackItemData*> ItemDatabase;
+    TMap<int32, UNsBackpackItem*> ItemDatabase;
 
     /** Increase available backpack slots. */
     UFUNCTION(BlueprintCallable, Category="Inventory")
@@ -36,11 +36,19 @@ public:
 
     /** Give items by data asset. */
     UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool GiveItem(UNsBackpackItemData* ItemData, int32 Quantity, bool bPersistent);
+    bool GiveItem(UNsBackpackItem* ItemData, int32 Quantity, bool bPersistent);
 
     /** Remove items by data asset. */
     UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool RemoveItem(UNsBackpackItemData* ItemData, int32 Quantity, bool bPersistent);
+    bool RemoveItem(UNsBackpackItem* ItemData, int32 Quantity, bool bPersistent);
+
+    /** Give items using the item class. */
+    UFUNCTION(BlueprintCallable, Category="Inventory")
+    bool GiveItemByClass(TSubclassOf<UNsBackpackItem> ItemClass, int32 Quantity, bool bPersistent);
+
+    /** Remove items using the item class. */
+    UFUNCTION(BlueprintCallable, Category="Inventory")
+    bool RemoveItemByClass(TSubclassOf<UNsBackpackItem> ItemClass, int32 Quantity, bool bPersistent);
 
     /** Give items by identifier. */
     UFUNCTION(BlueprintCallable, Category="Inventory")
@@ -51,7 +59,8 @@ public:
     bool RemoveItemByID(int32 ItemID, int32 Quantity, bool bPersistent);
 
 private:
-    bool GiveToList(TArray<FNsBackpackItemStack>& List, UNsBackpackItemData* ItemData, int32 Quantity, int32 MaxSlots);
-    bool RemoveFromList(TArray<FNsBackpackItemStack>& List, UNsBackpackItemData* ItemData, int32 Quantity);
+    void LoadItemDatabase();
+    bool GiveToList(TArray<FNsBackpackItemStack>& List, UNsBackpackItem* ItemData, int32 Quantity, int32 MaxSlots);
+    bool RemoveFromList(TArray<FNsBackpackItemStack>& List, UNsBackpackItem* ItemData, int32 Quantity);
 };
 

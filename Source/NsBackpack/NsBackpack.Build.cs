@@ -26,6 +26,7 @@ public class NsBackpack : ModuleRules
                                "Core",
                                "CoreUObject",
                                "Engine",
+                               "DeveloperSettings",
                        }
                        );
 			
