@@ -1,7 +1,8 @@
 // Copyright (c) 2025 mykaa
+
 #include "Inventory/NsBackpackComponent.h"
+#include "Inventory/NsBackpackItem.h"
 #include "Inventory/NsBackpackSettings.h"
-#include "Inventory/NsBackpackItemTable.h"
 
 UNsBackpackComponent::UNsBackpackComponent()
 {
@@ -9,68 +10,68 @@ UNsBackpackComponent::UNsBackpackComponent()
     LoadItemDatabase();
 }
 
-void UNsBackpackComponent::ExpandBackpack(int32 AdditionalSlots)
+void UNsBackpackComponent::ExpandBackpack(const int32 InAdditionalSlots)
 {
-    BackpackSlots += FMath::Max(0, AdditionalSlots);
+    BackpackSlots += FMath::Max(0, InAdditionalSlots);
 }
 
-bool UNsBackpackComponent::GiveItem(UNsBackpackItem* ItemData, int32 Quantity, bool bPersistent)
+bool UNsBackpackComponent::GiveItem(UNsBackpackItem* InItem, const int32 InQuantity, const bool InPersistent)
 {
-    TArray<FNsBackpackItemStack>& Target = bPersistent ? PersistentItems : BackpackItems;
-    int32 MaxSlots = bPersistent ? INDEX_NONE : BackpackSlots;
-    return GiveToList(Target, ItemData, Quantity, MaxSlots);
+    TArray<FNsBackpackItemStack>& Target = InPersistent ? PersistentItems : BackpackItems;
+    const int32 MaxSlots = InPersistent ? INDEX_NONE : BackpackSlots;
+    return GiveToList(Target, InItem, InQuantity, MaxSlots);
 }
 
-bool UNsBackpackComponent::RemoveItem(UNsBackpackItem* ItemData, int32 Quantity, bool bPersistent)
+bool UNsBackpackComponent::RemoveItem(UNsBackpackItem* InItem, const int32 InQuantity, const bool InPersistent)
 {
-    TArray<FNsBackpackItemStack>& Target = bPersistent ? PersistentItems : BackpackItems;
-    return RemoveFromList(Target, ItemData, Quantity);
+    TArray<FNsBackpackItemStack>& Target = InPersistent ? PersistentItems : BackpackItems;
+    return RemoveFromList(Target, InItem, InQuantity);
 }
 
-bool UNsBackpackComponent::GiveItemByID(int32 ItemID, int32 Quantity, bool bPersistent)
+bool UNsBackpackComponent::GiveItemByID(const int32 InItemID, const int32 InQuantity, const bool InPersistent)
 {
-    if (UNsBackpackItem** Found = ItemDatabase.Find(ItemID))
+    if (UNsBackpackItem* Found = *ItemDatabase.Find(InItemID))
     {
-        return GiveItem(*Found, Quantity, bPersistent);
+        return GiveItem(Found, InQuantity, InPersistent);
     }
     return false;
 }
 
-bool UNsBackpackComponent::RemoveItemByID(int32 ItemID, int32 Quantity, bool bPersistent)
+bool UNsBackpackComponent::RemoveItemByID(const int32 InItemID, const int32 InQuantity, const bool InPersistent)
 {
-    if (UNsBackpackItem** Found = ItemDatabase.Find(ItemID))
+    if (UNsBackpackItem* Found = *ItemDatabase.Find(InItemID))
     {
-        return RemoveItem(*Found, Quantity, bPersistent);
+        return RemoveItem(Found, InQuantity, InPersistent);
     }
     return false;
 }
 
-bool UNsBackpackComponent::GiveItemByClass(TSubclassOf<UNsBackpackItem> ItemClass, int32 Quantity, bool bPersistent)
+bool UNsBackpackComponent::GiveItemByClass(const TSubclassOf<UNsBackpackItem> InItemClass, const int32 InQuantity, const bool InPersistent)
 {
-    return ItemClass ? GiveItem(ItemClass->GetDefaultObject<UNsBackpackItem>(), Quantity, bPersistent) : false;
+    return InItemClass ? GiveItem(InItemClass->GetDefaultObject<UNsBackpackItem>(), InQuantity, InPersistent) : false;
 }
 
-bool UNsBackpackComponent::RemoveItemByClass(TSubclassOf<UNsBackpackItem> ItemClass, int32 Quantity, bool bPersistent)
+bool UNsBackpackComponent::RemoveItemByClass(const TSubclassOf<UNsBackpackItem> InItemClass, const int32 InQuantity, const bool InPersistent)
 {
-    return ItemClass ? RemoveItem(ItemClass->GetDefaultObject<UNsBackpackItem>(), Quantity, bPersistent) : false;
+    return InItemClass ? RemoveItem(InItemClass->GetDefaultObject<UNsBackpackItem>(), InQuantity, InPersistent) : false;
 }
 
-bool UNsBackpackComponent::GiveToList(TArray<FNsBackpackItemStack>& List, UNsBackpackItem* ItemData, int32 Quantity, int32 MaxSlots)
+bool UNsBackpackComponent::GiveToList(TArray<FNsBackpackItemStack>& InList, UNsBackpackItem* const InItemData, const int32 InQuantity, const int32 InMaxSlots)
 {
-    if (!ItemData || Quantity <= 0)
+    if (!InItemData || InQuantity <= 0)
     {
         return false;
     }
 
-    int32 Remaining = Quantity;
+    int32 Remaining = InQuantity;
 
-    if (ItemData->bStackable)
+    if (InItemData->bStackable)
     {
-        for (FNsBackpackItemStack& Stack : List)
+        for (FNsBackpackItemStack& Stack : InList)
         {
-            if (Stack.Item == ItemData && Stack.Quantity < ItemData->MaxStackSize)
+            if (Stack.Item == InItemData && Stack.Quantity < InItemData->MaxStackSize)
             {
-                int32 Addable = FMath::Min(Remaining, ItemData->MaxStackSize - Stack.Quantity);
+                const int32 Addable = FMath::Min(Remaining, InItemData->MaxStackSize - Stack.Quantity);
                 Stack.Quantity += Addable;
                 Remaining -= Addable;
                 if (Remaining <= 0)
@@ -83,15 +84,15 @@ bool UNsBackpackComponent::GiveToList(TArray<FNsBackpackItemStack>& List, UNsBac
 
     while (Remaining > 0)
     {
-        if (MaxSlots != INDEX_NONE && List.Num() >= MaxSlots)
+        if (InMaxSlots != INDEX_NONE && InList.Num() >= InMaxSlots)
         {
             return false; // no space
         }
 
-        int32 AddAmount = ItemData->bStackable ? FMath::Min(Remaining, ItemData->MaxStackSize) : 1;
-        List.Add(FNsBackpackItemStack(ItemData, AddAmount));
+        const int32 AddAmount = InItemData->bStackable ? FMath::Min(Remaining, InItemData->MaxStackSize) : 1;
+        InList.Add(FNsBackpackItemStack(InItemData, AddAmount));
         Remaining -= AddAmount;
-        if (!ItemData->bStackable)
+        if (!InItemData->bStackable)
         {
             Remaining -= 0; // explicit clarity
         }
@@ -100,27 +101,27 @@ bool UNsBackpackComponent::GiveToList(TArray<FNsBackpackItemStack>& List, UNsBac
     return true;
 }
 
-bool UNsBackpackComponent::RemoveFromList(TArray<FNsBackpackItemStack>& List, UNsBackpackItem* ItemData, int32 Quantity)
+bool UNsBackpackComponent::RemoveFromList(TArray<FNsBackpackItemStack>& InList, UNsBackpackItem* InItem, const int32 InQuantity)
 {
-    if (!ItemData || Quantity <= 0)
+    if (!InItem || InQuantity <= 0)
     {
         return false;
     }
 
-    int32 Remaining = Quantity;
+    int32 Remaining = InQuantity;
 
-    for (int32 i = 0; i < List.Num(); ++i)
+    for (int32 i = 0; i < InList.Num(); ++i)
     {
-        FNsBackpackItemStack& Stack = List[i];
-        if (Stack.Item == ItemData)
+        FNsBackpackItemStack& Stack = InList[i];
+        if (Stack.Item == InItem)
         {
-            int32 RemoveAmount = FMath::Min(Remaining, Stack.Quantity);
+            const int32 RemoveAmount = FMath::Min(Remaining, Stack.Quantity);
             Stack.Quantity -= RemoveAmount;
             Remaining -= RemoveAmount;
 
             if (Stack.Quantity <= 0)
             {
-                List.RemoveAt(i);
+                InList.RemoveAt(i);
                 --i;
             }
 
@@ -137,35 +138,30 @@ bool UNsBackpackComponent::RemoveFromList(TArray<FNsBackpackItemStack>& List, UN
 void UNsBackpackComponent::LoadItemDatabase()
 {
     ItemDatabase.Empty();
-    const UNsBackpackSettings* Settings = GetDefault<UNsBackpackSettings>();
-    if (!Settings || !Settings->ItemTable.IsValid())
+    const UNsBackpackSettings* const Settings = UNsBackpackSettings::GetSettings();
+    if (!Settings || !Settings->ItemDataTable.IsValid())
     {
         return;
     }
 
-    UNsBackpackItemTable* Table = Settings->ItemTable.LoadSynchronous();
+    const UDataTable* const Table = Settings->ItemDataTable.LoadSynchronous();
     if (!Table)
     {
         return;
     }
 
     TArray<FName> RowNames = Table->GetRowNames();
-    RowNames.Sort();
     for (int32 Index = 0; Index < RowNames.Num(); ++Index)
     {
-        if (FNsBackpackItemRow* Row = Table->FindRow<FNsBackpackItemRow>(RowNames[Index], TEXT("")))
+        if (const FNsBackpackItemRow* const Row = Table->FindRow<FNsBackpackItemRow>(RowNames[Index], TEXT("")))
         {
-            Row->ID = Index;
             if (Row->ItemClass)
             {
-                UNsBackpackItem* DefaultObj = Row->ItemClass->GetDefaultObject<UNsBackpackItem>();
-                if (DefaultObj)
+                if (UNsBackpackItem* const Item = Row->ItemClass->GetDefaultObject<UNsBackpackItem>())
                 {
-                    DefaultObj->ID = Index;
-                    ItemDatabase.Add(Index, DefaultObj);
+                    ItemDatabase.Emplace(Item->ID, Item);
                 }
             }
         }
     }
 }
-

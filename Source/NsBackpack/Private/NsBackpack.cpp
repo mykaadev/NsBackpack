@@ -1,4 +1,4 @@
-// Copyright (c) 2025 mykaa
+// Copyright (C) 2025 mykaadev. All rights reserved.
 
 #include "NsBackpack.h"
 
@@ -6,15 +6,15 @@
 
 void FNsBackpackModule::StartupModule()
 {
-	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
+    // This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 }
 
 void FNsBackpackModule::ShutdownModule()
 {
-	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
-	// we call this function before unloading the module.
+    // This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
+    // we call this function before unloading the module.
 }
 
 #undef LOCTEXT_NAMESPACE
-	
+
 IMPLEMENT_MODULE(FNsBackpackModule, NsBackpack)

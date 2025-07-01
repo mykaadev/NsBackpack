@@ -1,66 +1,80 @@
 // Copyright (c) 2025 mykaa
+
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Inventory/NsBackpackItem.h"
 #include "NsBackpackComponent.generated.h"
 
-/** Component handling backpack and persistent item storage. */
+/**
+ * Component handling backpack and persistent item storage
+ */
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class NSBACKPACK_API UNsBackpackComponent : public UActorComponent
 {
     GENERATED_BODY()
+
+// Functions
 public:
+
+    /** Constructor */
     UNsBackpackComponent();
 
-    /** Maximum number of backpack item stacks. */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory")
-    int32 BackpackSlots = 20;
-
-    /** Backpack item stacks. */
-    UPROPERTY(BlueprintReadOnly, Category="Inventory")
-    TArray<FNsBackpackItemStack> BackpackItems;
-
-    /** Persistent item stacks that cannot be dropped. */
-    UPROPERTY(BlueprintReadOnly, Category="Inventory")
-    TArray<FNsBackpackItemStack> PersistentItems;
-
-    /** Database used to resolve item IDs. */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory")
-    TMap<int32, UNsBackpackItem*> ItemDatabase;
-
     /** Increase available backpack slots. */
-    UFUNCTION(BlueprintCallable, Category="Inventory")
-    void ExpandBackpack(int32 AdditionalSlots);
+    void ExpandBackpack(const int32 InAdditionalSlots);
 
-    /** Give items by data asset. */
+    /** Give items by object. */
     UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool GiveItem(UNsBackpackItem* ItemData, int32 Quantity, bool bPersistent);
+    bool GiveItem(class UNsBackpackItem* InItem, const int32 InQuantity, const bool InPersistent);
 
-    /** Remove items by data asset. */
+    /** Remove items by object. */
     UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool RemoveItem(UNsBackpackItem* ItemData, int32 Quantity, bool bPersistent);
+    bool RemoveItem(class UNsBackpackItem* InItem, const int32 InQuantity, const bool InPersistent);
 
     /** Give items using the item class. */
     UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool GiveItemByClass(TSubclassOf<UNsBackpackItem> ItemClass, int32 Quantity, bool bPersistent);
+    bool GiveItemByClass(const TSubclassOf<class UNsBackpackItem> InItemClass, const int32 InQuantity, const bool InPersistent);
 
     /** Remove items using the item class. */
     UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool RemoveItemByClass(TSubclassOf<UNsBackpackItem> ItemClass, int32 Quantity, bool bPersistent);
+    bool RemoveItemByClass(const TSubclassOf<UNsBackpackItem> InItemClass, const int32 InQuantity, const bool InPersistent);
 
     /** Give items by identifier. */
     UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool GiveItemByID(int32 ItemID, int32 Quantity, bool bPersistent);
+    bool GiveItemByID(const int32 InItemID, const int32 InQuantity, const bool InPersistent);
 
     /** Remove items by identifier. */
     UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool RemoveItemByID(int32 ItemID, int32 Quantity, bool bPersistent);
+    bool RemoveItemByID(const int32 InItemID, const int32 InQuantity, const bool InPersistent);
+
+// Variables
+public:
+
+    /** Maximum number of backpack item stacks. */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory")
+    int32 BackpackSlots;
+
+    /** Backpack item stacks. */
+    UPROPERTY(BlueprintReadOnly, Category="Inventory")
+    TArray<struct FNsBackpackItemStack> BackpackItems;
+
+    /** Persistent item stacks that cannot be dropped. */
+    UPROPERTY(BlueprintReadOnly, Category="Inventory")
+    TArray<struct FNsBackpackItemStack> PersistentItems;
+
+    /** Database used to resolve item IDs. */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory")
+    TMap<int32, class UNsBackpackItem*> ItemDatabase;
 
 private:
+
+    /** Give To List */
+    bool GiveToList(TArray<FNsBackpackItemStack>& InList, class UNsBackpackItem* const InItemData, const int32 InQuantity, const int32 InMaxSlots);
+
+    /**  Remove from list */
+    bool RemoveFromList(TArray<FNsBackpackItemStack>& InList, class UNsBackpackItem* const InItem, int32 InQuantity);
+
+    /** Load Item database */
     void LoadItemDatabase();
-    bool GiveToList(TArray<FNsBackpackItemStack>& List, UNsBackpackItem* ItemData, int32 Quantity, int32 MaxSlots);
-    bool RemoveFromList(TArray<FNsBackpackItemStack>& List, UNsBackpackItem* ItemData, int32 Quantity);
 };
 
