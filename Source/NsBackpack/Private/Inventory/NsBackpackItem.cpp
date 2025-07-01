@@ -1,43 +1,46 @@
-#include "Inventory/NsBackpackItem.h"
-#include "Inventory/NsBackpackSettings.h"
+// Copyright (C) 2025 mykaadev. All rights reserved.
 
-void UNsBackpackItem::Use_Implementation(AActor* Target)
+#include "Inventory/NsBackpackItem.h"
+
+void FNsBackpackItemRow::OnDataTableChanged(const UDataTable* InDataTable, const FName InRowName)
+{
+    FTableRowBase::OnDataTableChanged(InDataTable, InRowName);
+
+    UDataTable* const ItemDataTable = const_cast<UDataTable*>(InDataTable);
+    if (InDataTable != nullptr)
+    {
+        TArray<FNsBackpackItemRow*> ItemDataArray;
+        InDataTable->GetAllRows<FNsBackpackItemRow>(TEXT(""), ItemDataArray);
+
+        for (int32 Index = 0; Index < ItemDataArray.Num(); ++Index)
+        {
+            if (ItemDataArray[Index]->ItemClass != nullptr)
+            {
+                if (UNsBackpackItem* const Item = ItemDataArray[Index]->ItemClass->GetDefaultObject<UNsBackpackItem>())
+                {
+                    if (Item->ID != Index)
+                    {
+                        Item->ID = Index;
+                        Item->Modify(); // Modify the item itself
+                    }
+                }
+            }
+        }
+
+        ItemDataTable->Modify();
+    }
+}
+
+UNsBackpackItem::UNsBackpackItem()
+    : ID(0)
+    , Image(nullptr)
+    , bStackable(true)
+    , MaxStackSize(0)
+    , Mesh(nullptr)
+    , ActorToSpawn(nullptr)
+{}
+
+void UNsBackpackItem::Use_Implementation(AActor* const InItemOwner)
 {
     // Default does nothing
 }
-
-#if WITH_EDITOR
-void UNsBackpackItem::PostInitProperties()
-{
-    Super::PostInitProperties();
-    if (!HasAnyFlags(RF_ClassDefaultObject))
-    {
-        const UNsBackpackSettings* Settings = GetDefault<UNsBackpackSettings>();
-        if (Settings && Settings->ItemTable.IsValid())
-        {
-            UNsBackpackItemTable* Table = Settings->ItemTable.LoadSynchronous();
-            if (Table && Table->RowStruct == FNsBackpackItemRow::StaticStruct())
-            {
-                TArray<FName> RowNames = Table->GetRowNames();
-                for (FName RowName : RowNames)
-                {
-                    if (FNsBackpackItemRow* Row = Table->FindRow<FNsBackpackItemRow>(RowName, TEXT("")))
-                    {
-                        if (Row->ItemClass == GetClass())
-                        {
-                            ID = Row->ID;
-                            return;
-                        }
-                    }
-                }
-
-                FNsBackpackItemRow NewRow;
-                NewRow.ItemClass = GetClass();
-                Table->AddRow(*Name.ToString(), NewRow);
-                Table->MarkPackageDirty();
-            }
-        }
-    }
-}
-#endif
-
