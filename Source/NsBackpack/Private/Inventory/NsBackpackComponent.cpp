@@ -15,17 +15,19 @@ void UNsBackpackComponent::ExpandBackpack(const int32 InAdditionalSlots)
     BackpackSlots += FMath::Max(0, InAdditionalSlots);
 }
 
-bool UNsBackpackComponent::GiveItem(UNsBackpackItem* InItem, const int32 InQuantity, const bool InPersistent)
+bool UNsBackpackComponent::GiveItemByClass(const TSubclassOf<UNsBackpackItem> InItemClass, const int32 InQuantity, const bool InPersistent)
 {
-    TArray<FNsBackpackItemStack>& Target = InPersistent ? PersistentItems : BackpackItems;
-    const int32 MaxSlots = InPersistent ? INDEX_NONE : BackpackSlots;
-    return GiveToList(Target, InItem, InQuantity, MaxSlots);
+    return InItemClass != nullptr ? GiveItem(InItemClass->GetDefaultObject<UNsBackpackItem>(), InQuantity, InPersistent) : false;
 }
 
-bool UNsBackpackComponent::RemoveItem(UNsBackpackItem* InItem, const int32 InQuantity, const bool InPersistent)
+bool UNsBackpackComponent::RemoveItemByClass(const TSubclassOf<UNsBackpackItem> InItemClass, const int32 InQuantity, const bool InPersistent)
 {
-    TArray<FNsBackpackItemStack>& Target = InPersistent ? PersistentItems : BackpackItems;
-    return RemoveFromList(Target, InItem, InQuantity);
+    return InItemClass != nullptr ? RemoveItem(InItemClass->GetDefaultObject<UNsBackpackItem>(), InQuantity, InPersistent) : false;
+}
+
+bool UNsBackpackComponent::FindItemByClass(const TSubclassOf<UNsBackpackItem> InItemClass, const int32 InQuantity, const bool InPersistent)
+{
+    return InItemClass != nullptr ? FindItem(InItemClass->GetDefaultObject<UNsBackpackItem>(), InQuantity, InPersistent) : false;
 }
 
 bool UNsBackpackComponent::GiveItemByID(const int32 InItemID, const int32 InQuantity, const bool InPersistent)
@@ -46,14 +48,32 @@ bool UNsBackpackComponent::RemoveItemByID(const int32 InItemID, const int32 InQu
     return false;
 }
 
-bool UNsBackpackComponent::GiveItemByClass(const TSubclassOf<UNsBackpackItem> InItemClass, const int32 InQuantity, const bool InPersistent)
+bool UNsBackpackComponent::FindItemByID(const int32 InItemID, const int32 InQuantity, const bool InPersistent)
 {
-    return InItemClass ? GiveItem(InItemClass->GetDefaultObject<UNsBackpackItem>(), InQuantity, InPersistent) : false;
+    if (UNsBackpackItem* Found = *ItemDatabase.Find(InItemID))
+    {
+        return FindItem(Found, InQuantity, InPersistent);
+    }
+    return false;
 }
 
-bool UNsBackpackComponent::RemoveItemByClass(const TSubclassOf<UNsBackpackItem> InItemClass, const int32 InQuantity, const bool InPersistent)
+bool UNsBackpackComponent::GiveItem(UNsBackpackItem* InItem, const int32 InQuantity, const bool InPersistent)
 {
-    return InItemClass ? RemoveItem(InItemClass->GetDefaultObject<UNsBackpackItem>(), InQuantity, InPersistent) : false;
+    TArray<FNsBackpackItemStack>& Target = InPersistent ? PersistentItems : BackpackItems;
+    const int32 MaxSlots = InPersistent ? INDEX_NONE : BackpackSlots;
+    return GiveToList(Target, InItem, InQuantity, MaxSlots);
+}
+
+bool UNsBackpackComponent::RemoveItem(UNsBackpackItem* InItem, const int32 InQuantity, const bool InPersistent)
+{
+    TArray<FNsBackpackItemStack>& Target = InPersistent ? PersistentItems : BackpackItems;
+    return RemoveFromList(Target, InItem, InQuantity);
+}
+
+bool UNsBackpackComponent::FindItem(UNsBackpackItem* InItem, const int32 InQuantity, const bool InPersistent)
+{
+    TArray<FNsBackpackItemStack>& Target = InPersistent ? PersistentItems : BackpackItems;
+    return FindInList(Target, InItem, InQuantity);
 }
 
 bool UNsBackpackComponent::GiveToList(TArray<FNsBackpackItemStack>& InList, UNsBackpackItem* const InItemData, const int32 InQuantity, const int32 InMaxSlots)
@@ -133,6 +153,25 @@ bool UNsBackpackComponent::RemoveFromList(TArray<FNsBackpackItemStack>& InList, 
     }
 
     return Remaining <= 0;
+}
+
+bool UNsBackpackComponent::FindInList(TArray<FNsBackpackItemStack>& InList, UNsBackpackItem* InItem, const int32 InQuantity)
+{
+    if (!InItem || InQuantity <= 0)
+    {
+        return false;
+    }
+
+    for (int32 i = 0; i < InList.Num(); ++i)
+    {
+        FNsBackpackItemStack& Stack = InList[i];
+        if (Stack.Item == InItem && Stack.Quantity >= InQuantity)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void UNsBackpackComponent::LoadItemDatabase()
