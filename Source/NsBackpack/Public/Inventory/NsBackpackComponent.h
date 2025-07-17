@@ -23,21 +23,17 @@ public:
     /** Increase available backpack slots. */
     void ExpandBackpack(const int32 InAdditionalSlots);
 
-    /** Give items by object. */
-    UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool GiveItem(class UNsBackpackItem* InItem, const int32 InQuantity, const bool InPersistent);
-
-    /** Remove items by object. */
-    UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool RemoveItem(class UNsBackpackItem* InItem, const int32 InQuantity, const bool InPersistent);
-
     /** Give items using the item class. */
     UFUNCTION(BlueprintCallable, Category="Inventory")
     bool GiveItemByClass(const TSubclassOf<class UNsBackpackItem> InItemClass, const int32 InQuantity, const bool InPersistent);
 
     /** Remove items using the item class. */
     UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool RemoveItemByClass(const TSubclassOf<UNsBackpackItem> InItemClass, const int32 InQuantity, const bool InPersistent);
+    bool RemoveItemByClass(const TSubclassOf<class UNsBackpackItem> InItemClass, const int32 InQuantity, const bool InPersistent);
+
+    /** Does the owner has this item*/
+    UFUNCTION(BlueprintCallable, Category="Inventory")
+    bool FindItemByClass(const TSubclassOf<class UNsBackpackItem> InItemClass, const int32 InQuantity, const bool InPersistent);
 
     /** Give items by identifier. */
     UFUNCTION(BlueprintCallable, Category="Inventory")
@@ -46,6 +42,36 @@ public:
     /** Remove items by identifier. */
     UFUNCTION(BlueprintCallable, Category="Inventory")
     bool RemoveItemByID(const int32 InItemID, const int32 InQuantity, const bool InPersistent);
+
+    /** Does the owner has this item */
+    UFUNCTION(BlueprintCallable, Category="Inventory")
+    bool FindItemByID(const int32 InItemID, const int32 InQuantity, const bool InPersistent);
+
+    /** Give items by object. */
+    UFUNCTION(BlueprintCallable, Category="Inventory")
+    bool GiveItem(class UNsBackpackItem* InItem, const int32 InQuantity, const bool InPersistent);
+
+    /** Remove items by object. */
+    UFUNCTION(BlueprintCallable, Category="Inventory")
+    bool RemoveItem(class UNsBackpackItem* InItem, const int32 InQuantity, const bool InPersistent);
+
+    /** Does the owner have  the specified item in any stash */
+    UFUNCTION(BlueprintCallable, Category="Inventory")
+    bool FindItem(class UNsBackpackItem* InItem, const int32 InQuantity, const bool InPersistent);
+
+private:
+
+    /** Give To List */
+    bool GiveToList(TArray<struct FNsBackpackItemStack>& InList, class UNsBackpackItem* const InItemData, const int32 InQuantity, const int32 InMaxSlots);
+
+    /**  Remove from list */
+    bool RemoveFromList(TArray<struct FNsBackpackItemStack>& InList, class UNsBackpackItem* const InItem, int32 InQuantity);
+
+    /** Finds a item in a given list, returns true if the quantity is bigger or equal to the specified */
+    bool FindInList(TArray<struct FNsBackpackItemStack>& InList, class UNsBackpackItem* InItem, const int32 InQuantity);
+
+    /** Load Item database */
+    void LoadItemDatabase();
 
 // Variables
 public:
@@ -65,16 +91,5 @@ public:
     /** Database used to resolve item IDs. */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory")
     TMap<int32, class UNsBackpackItem*> ItemDatabase;
-
-private:
-
-    /** Give To List */
-    bool GiveToList(TArray<FNsBackpackItemStack>& InList, class UNsBackpackItem* const InItemData, const int32 InQuantity, const int32 InMaxSlots);
-
-    /**  Remove from list */
-    bool RemoveFromList(TArray<FNsBackpackItemStack>& InList, class UNsBackpackItem* const InItem, int32 InQuantity);
-
-    /** Load Item database */
-    void LoadItemDatabase();
 };
 
