@@ -108,14 +108,18 @@ bool UNsBackpackComponent::GiveToList(TArray<FNsBackpackItemStack>& InList, UNsB
         {
             return false; // no space
         }
+        const bool bInfinite = InItemData->bStackable && InItemData->MaxStackSize == 0;
+        const int32 AddAmount = InItemData->bStackable ? (bInfinite ? Remaining : FMath::Min(Remaining, InItemData->MaxStackSize))
+                                                       : 1;
 
-        const int32 AddAmount = InItemData->bStackable ? FMath::Min(Remaining, InItemData->MaxStackSize) : 1;
-        InList.Add(FNsBackpackItemStack(InItemData, AddAmount));
-        Remaining -= AddAmount;
-        if (!InItemData->bStackable)
+        if (AddAmount <= 0)
         {
-            Remaining -= 0; // explicit clarity
+            UE_LOG(LogTemp, Error, TEXT("Invalid stack size for %s"), *InItemData->GetName());
+            return false; // avoid infinite loop
         }
+
+        InList.Emplace(FNsBackpackItemStack(InItemData, AddAmount));
+        Remaining -= AddAmount;
     }
 
     return true;
