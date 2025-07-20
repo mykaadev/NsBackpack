@@ -34,7 +34,7 @@ void FNsBackpackItemRow::OnDataTableChanged(const UDataTable* InDataTable, const
 UNsBackpackItem::UNsBackpackItem()
     : ID(0)
     , Image(nullptr)
-    , bStackable(true)
+    , bStackable(false)
     , MaxStackSize(0)
     , Mesh(nullptr)
     , ActorToSpawn(nullptr)
