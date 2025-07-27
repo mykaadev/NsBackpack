@@ -120,6 +120,18 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Item")
     class AActor* GetBackpackOwner() const;
 
+    /** Set owning backpack */
+    void SetBackpackComponent(class UNsBackpackComponent* InBackpack) { Backpack = InBackpack; }
+
+    /** Add to the stack quantity */
+    void AddQuantity(int32 Amount);
+
+    /** Remove from the stack quantity */
+    void RemoveQuantity(int32 Amount);
+
+    /** Whether the stack has reached the max quantity */
+    bool IsStackFull() const;
+
 private:
 
     /** Weather it can stack with other item */
