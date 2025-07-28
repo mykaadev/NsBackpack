@@ -20,14 +20,22 @@ public:
     UNsBackpackItemFragment() {}
 
     /** On Initialization */
-    virtual void OnInitialization(class UNsBackpackItemInstance* InOwningItem) {}
+    UFUNCTION(BlueprintNativeEvent)
+    void OnInitialization(class UNsBackpackItemInstance* InOwningItem);
+    virtual void OnInitialization_Implementation(class UNsBackpackItemInstance* InOwningItem) {}
 
     /** On Activate */
-    virtual void OnActivation(class UNsBackpackItemInstance* InOwningItem) {}
+    UFUNCTION(BlueprintNativeEvent)
+    void OnActivation(class UNsBackpackItemInstance* InOwningItem);
+    virtual void OnActivation_Implementation(class UNsBackpackItemInstance* InOwningItem) {}
 
     /** On Deactivate */
-    virtual void OnDeactivation(class UNsBackpackItemInstance* InOwningItem) {}
+    UFUNCTION(BlueprintNativeEvent)
+    void OnDeactivation(class UNsBackpackItemInstance* InOwningItem);
+    virtual void OnDeactivation_Implementation(class UNsBackpackItemInstance* InOwningItem) {}
 
     /** Can stack with */
-    virtual bool CanStackWith(const UNsBackpackItemFragment* InOtherFragment) const { return true; }
+    UFUNCTION(BlueprintNativeEvent)
+    bool CanStackWith(const class UNsBackpackItemFragment* InOtherFragment);
+    virtual bool CanStackWith_Implementation(const UNsBackpackItemFragment* InOtherFragment) { return true; }
 };

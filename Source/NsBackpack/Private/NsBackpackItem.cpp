@@ -10,8 +10,7 @@
 #endif
 
 UNsBackpackItemDefinition::UNsBackpackItemDefinition()
-    : ID(-1)
-    , ItemType(ENsBackpackItemCategory::Miscellaneous)
+    : ItemType(ENsBackpackItemCategory::Miscellaneous)
     , Rarity(ENsBackpackItemRarity::Common)
 {
 }
@@ -55,6 +54,7 @@ EDataValidationResult UNsBackpackItemDefinition::IsDataValid(FDataValidationCont
 
     return bHasNullFragments ? EDataValidationResult::Invalid : Result;
 }
+#endif // WITH_EDITOR
 
 /***********************************************************************************************
  *                                        Item Instance
@@ -100,6 +100,28 @@ void UNsBackpackItemInstance::DeactivateItem()
     }
 }
 
+void UNsBackpackItemInstance::AddQuantity(int32 Amount)
+{
+    if (ItemDefinition)
+    {
+        Quantity = FMath::Clamp(Quantity + Amount, 0, ItemDefinition->StackSizeMax);
+    }
+    else
+    {
+        Quantity += Amount;
+    }
+}
+
+void UNsBackpackItemInstance::RemoveQuantity(int32 Amount)
+{
+    Quantity = FMath::Max(0, Quantity - Amount);
+}
+
+bool UNsBackpackItemInstance::IsStackFull() const
+{
+    return ItemDefinition && Quantity >= ItemDefinition->StackSizeMax;
+}
+
 bool UNsBackpackItemInstance::CanStackWith(const UNsBackpackItemInstance* InOtherItemInstance) const
 {
     if (ItemDefinition != nullptr && ItemDefinition->StackSizeMax <= 0)
@@ -118,7 +140,7 @@ bool UNsBackpackItemInstance::CanStackWith(const UNsBackpackItemInstance* InOthe
         }
     }
 
-    return false;
+    return true;
 }
 
 class UNsBackpackComponent* UNsBackpackItemInstance::GetBackpackComponent() const
@@ -139,4 +161,3 @@ class AActor* UNsBackpackItemInstance::GetBackpackOwner() const
     return nullptr;
 }
 
-#endif
