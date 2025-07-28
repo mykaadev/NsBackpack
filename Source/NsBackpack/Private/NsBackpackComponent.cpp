@@ -38,14 +38,14 @@ bool UNsBackpackComponent::GiveItemByClass(const TSubclassOf<class UNsBackpackIt
     int32 Remaining = InQuantity;
 
     // Try to stack into existing stacks first
-    for (FNsBackpackSlot& Slot : Slots)
+    for (const FNsBackpackSlot& Slot : Slots)
     {
         if (Remaining <= 0)
         {
             break;
         }
 
-        if (Slot.ItemInstance && Slot.ItemInstance->GetItemDefinition() == Def)
+        if (Slot.ItemInstance != nullptr && Slot.ItemInstance->GetItemDefinition() == Def)
         {
             const int32 SpaceLeft = Def->StackSizeMax - Slot.ItemInstance->GetQuatity();
             if (SpaceLeft > 0)
@@ -86,7 +86,7 @@ bool UNsBackpackComponent::RemoveItemByClass(const TSubclassOf<class UNsBackpack
         return false;
     }
 
-    UNsBackpackItemDefinition* Def = InItemClass->GetDefaultObject<UNsBackpackItemDefinition>();
+    const UNsBackpackItemDefinition* Def = InItemClass->GetDefaultObject<UNsBackpackItemDefinition>();
     if (!Def)
     {
         return false;
@@ -141,90 +141,6 @@ bool UNsBackpackComponent::FindItemByClass(const TSubclassOf<class UNsBackpackIt
             if (Count >= InQuantity)
             {
                 return true;
-            }
-        }
-    }
-
-    return false;
-}
-
-bool UNsBackpackComponent::GiveItemByID(const int32 InItemID, const int32 InQuantity, const bool InPersistent)
-{
-    if (InItemID < 0 || InQuantity <= 0)
-    {
-        return false;
-    }
-
-    if (UNsBackpackSettings* Settings = UNsBackpackSettings::GetSettings())
-    {
-        UDataTable* DataTable = Settings->ItemDataTable.LoadSynchronous();
-        if (DataTable)
-        {
-            for (const auto& Row : DataTable->GetRowMap())
-            {
-                if (UNsBackpackItemDefinition* Def = Cast<UNsBackpackItemDefinition>(Row.Value))
-                {
-                    if (Def->ID == InItemID)
-                    {
-                        return GiveItemByClass(Def->GetClass(), InQuantity);
-                    }
-                }
-            }
-        }
-    }
-
-    return false;
-}
-
-bool UNsBackpackComponent::RemoveItemByID(const int32 InItemID, const int32 InQuantity, const bool InPersistent)
-{
-    if (InItemID < 0 || InQuantity <= 0)
-    {
-        return false;
-    }
-
-    if (UNsBackpackSettings* Settings = UNsBackpackSettings::GetSettings())
-    {
-        UDataTable* DataTable = Settings->ItemDataTable.LoadSynchronous();
-        if (DataTable)
-        {
-            for (const auto& Row : DataTable->GetRowMap())
-            {
-                if (UNsBackpackItemDefinition* Def = Cast<UNsBackpackItemDefinition>(Row.Value))
-                {
-                    if (Def->ID == InItemID)
-                    {
-                        return RemoveItemByClass(Def->GetClass(), InQuantity);
-                    }
-                }
-            }
-        }
-    }
-
-    return false;
-}
-
-bool UNsBackpackComponent::FindItemByID(const int32 InItemID, const int32 InQuantity, const bool InPersistent)
-{
-    if (InItemID < 0 || InQuantity <= 0)
-    {
-        return false;
-    }
-
-    if (UNsBackpackSettings* Settings = UNsBackpackSettings::GetSettings())
-    {
-        UDataTable* DataTable = Settings->ItemDataTable.LoadSynchronous();
-        if (DataTable)
-        {
-            for (const auto& Row : DataTable->GetRowMap())
-            {
-                if (UNsBackpackItemDefinition* Def = Cast<UNsBackpackItemDefinition>(Row.Value))
-                {
-                    if (Def->ID == InItemID)
-                    {
-                        return FindItemByClass(Def->GetClass(), InQuantity);
-                    }
-                }
             }
         }
     }
