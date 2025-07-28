@@ -10,8 +10,7 @@
 #endif
 
 UNsBackpackItemDefinition::UNsBackpackItemDefinition()
-    : ID(-1)
-    , ItemType(ENsBackpackItemCategory::Miscellaneous)
+    : ItemType(ENsBackpackItemCategory::Miscellaneous)
     , Rarity(ENsBackpackItemRarity::Common)
 {
 }

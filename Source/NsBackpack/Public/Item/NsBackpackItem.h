@@ -29,10 +29,6 @@ public:
 #endif
     //~ End UPrimaryDataAsset Interface
 
-    /** Identifier assigned from the item table. */
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Data")
-    int32 ID;
-
     /** The display name of the item */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Display")
     FText Name;

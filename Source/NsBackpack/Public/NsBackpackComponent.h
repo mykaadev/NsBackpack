@@ -21,6 +21,9 @@ public:
     /** Constructor */
     UNsBackpackComponent();
 
+    /** Initialize slots */
+    void InitializeSlots(int32 NumSlots);
+
     /** Give items using the item class */
     UFUNCTION(BlueprintCallable, Category="Inventory")
     bool GiveItemByClass(const TSubclassOf<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity);
@@ -32,21 +35,6 @@ public:
     /** Does the owner has this item */
     UFUNCTION(BlueprintCallable, Category="Inventory")
     bool FindItemByClass(const TSubclassOf<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity);
-
-    /** Give items by identifier */
-    UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool GiveItemByID(const int32 InItemID, const int32 InQuantity, const bool InPersistent);
-
-    /** Remove items by identifier */
-    UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool RemoveItemByID(const int32 InItemID, const int32 InQuantity, const bool InPersistent);
-
-    /** Does the owner has this item */
-    UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool FindItemByID(const int32 InItemID, const int32 InQuantity, const bool InPersistent);
-
-    /** Initialize slots */
-    void InitializeSlots(int32 NumSlots);
 
 // Variables
 public:
