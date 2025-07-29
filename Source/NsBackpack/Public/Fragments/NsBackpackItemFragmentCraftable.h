@@ -29,5 +29,5 @@ public:
 
     /** Crafting Recipes */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Crafting")
-    TMap<TSoftClassPtr<class UNsBackpackItemDefinition>, int32> Recipe;
+    TMap<TSoftObjectPtr<class UNsBackpackItemDefinition>, int32> Recipe;
 };

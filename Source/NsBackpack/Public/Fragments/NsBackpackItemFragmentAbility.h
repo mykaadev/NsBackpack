@@ -53,7 +53,7 @@ public:
         }
     }
     virtual void OnDeactivation_Implementation(class UNsBackpackItemInstance* InOwningItem) override {}
-    virtual bool CanStackWith_Implementation(const class UNsBackpackItemFragment* InOtherFragment) override { return true; }
+    virtual bool CanStackWith_Implementation(const class UNsBackpackItemFragment* InOtherFragment) override {return true; }
     //~ End UNsBackpackItemFragment Interface
 
     /** Ability to execute */

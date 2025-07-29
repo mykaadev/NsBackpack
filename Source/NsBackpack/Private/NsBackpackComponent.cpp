@@ -22,15 +22,15 @@ void UNsBackpackComponent::InitializeSlots(const int32 InSlots)
     }
 }
 
-bool UNsBackpackComponent::GiveItemByClass(const TSubclassOf<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity)
+bool UNsBackpackComponent::GiveItemByClass(const TSoftObjectPtr<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity)
 {
     if (!InItemClass || InQuantity <= 0)
     {
         return false;
     }
 
-    UNsBackpackItemDefinition* Def = InItemClass->GetDefaultObject<UNsBackpackItemDefinition>();
-    if (!Def)
+    UNsBackpackItemDefinition* const ItemDefinition = InItemClass.LoadSynchronous();
+    if (!ItemDefinition)
     {
         return false;
     }
@@ -45,9 +45,9 @@ bool UNsBackpackComponent::GiveItemByClass(const TSubclassOf<class UNsBackpackIt
             break;
         }
 
-        if (Slot.ItemInstance != nullptr && Slot.ItemInstance->GetItemDefinition() == Def)
+        if (Slot.ItemInstance != nullptr && Slot.ItemInstance->GetItemDefinition() == ItemDefinition)
         {
-            const int32 SpaceLeft = Def->StackSizeMax - Slot.ItemInstance->GetQuatity();
+            const int32 SpaceLeft = ItemDefinition->StackSizeMax - Slot.ItemInstance->GetQuatity();
             if (SpaceLeft > 0)
             {
                 const int32 ToAdd = FMath::Min(SpaceLeft, Remaining);
@@ -67,9 +67,9 @@ bool UNsBackpackComponent::GiveItemByClass(const TSubclassOf<class UNsBackpackIt
 
         if (Slot.ItemInstance == nullptr)
         {
-            const int32 ToAdd = FMath::Min(Remaining, Def->StackSizeMax);
-            UNsBackpackItemInstance* NewInstance = NewObject<UNsBackpackItemInstance>(this);
-            NewInstance->Initialize(Def, ToAdd);
+            const int32 ToAdd = FMath::Min(Remaining, ItemDefinition->StackSizeMax);
+            UNsBackpackItemInstance* const NewInstance = NewObject<UNsBackpackItemInstance>(this);
+            NewInstance->Initialize(ItemDefinition, ToAdd);
             NewInstance->SetBackpackComponent(this);
             Slot.ItemInstance = NewInstance;
             Remaining -= ToAdd;
@@ -79,15 +79,15 @@ bool UNsBackpackComponent::GiveItemByClass(const TSubclassOf<class UNsBackpackIt
     return Remaining == 0;
 }
 
-bool UNsBackpackComponent::RemoveItemByClass(const TSubclassOf<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity)
+bool UNsBackpackComponent::RemoveItemByClass(const TSoftObjectPtr<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity)
 {
     if (!InItemClass || InQuantity <= 0)
     {
         return false;
     }
 
-    const UNsBackpackItemDefinition* Def = InItemClass->GetDefaultObject<UNsBackpackItemDefinition>();
-    if (!Def)
+    const UNsBackpackItemDefinition* const ItemDefinition = InItemClass.LoadSynchronous();
+    if (!ItemDefinition)
     {
         return false;
     }
@@ -101,7 +101,7 @@ bool UNsBackpackComponent::RemoveItemByClass(const TSubclassOf<class UNsBackpack
             break;
         }
 
-        if (Slot.ItemInstance && Slot.ItemInstance->GetItemDefinition() == Def)
+        if (Slot.ItemInstance && Slot.ItemInstance->GetItemDefinition() == ItemDefinition)
         {
             const int32 Available = Slot.ItemInstance->GetQuatity();
             const int32 ToRemove = FMath::Min(Available, Remaining);
@@ -119,15 +119,15 @@ bool UNsBackpackComponent::RemoveItemByClass(const TSubclassOf<class UNsBackpack
     return Remaining == 0;
 }
 
-bool UNsBackpackComponent::FindItemByClass(const TSubclassOf<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity)
+bool UNsBackpackComponent::FindItemByClass(const TSoftObjectPtr<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity)
 {
     if (!InItemClass || InQuantity <= 0)
     {
         return false;
     }
 
-    UNsBackpackItemDefinition* Def = InItemClass->GetDefaultObject<UNsBackpackItemDefinition>();
-    if (!Def)
+    const UNsBackpackItemDefinition* const ItemDefinition = InItemClass.LoadSynchronous();
+    if (!ItemDefinition)
     {
         return false;
     }
@@ -135,7 +135,7 @@ bool UNsBackpackComponent::FindItemByClass(const TSubclassOf<class UNsBackpackIt
     int32 Count = 0;
     for (const FNsBackpackSlot& Slot : Slots)
     {
-        if (Slot.ItemInstance && Slot.ItemInstance->GetItemDefinition() == Def)
+        if (Slot.ItemInstance && Slot.ItemInstance->GetItemDefinition() == ItemDefinition)
         {
             Count += Slot.ItemInstance->GetQuatity();
             if (Count >= InQuantity)

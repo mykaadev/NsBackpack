@@ -26,15 +26,15 @@ public:
 
     /** Give items using the item class */
     UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool GiveItemByClass(const TSubclassOf<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity);
+    bool GiveItemByClass(const TSoftObjectPtr<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity);
 
     /** Remove items using the item class */
     UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool RemoveItemByClass(const TSubclassOf<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity);
+    bool RemoveItemByClass(const TSoftObjectPtr<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity);
 
     /** Does the owner has this item */
     UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool FindItemByClass(const TSubclassOf<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity);
+    bool FindItemByClass(const TSoftObjectPtr<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity);
 
 // Variables
 public:
