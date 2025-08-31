@@ -8,6 +8,12 @@ UNsBackpackComponent::UNsBackpackComponent()
     : InventorySize(6)
 {
     PrimaryComponentTick.bCanEverTick = false;
+}
+
+void UNsBackpackComponent::BeginPlay()
+{
+    Super::BeginPlay();
+
     InitializeSlots(InventorySize);
 
     for (const auto& DefaultItem : DefaultInventory)
@@ -31,7 +37,7 @@ void UNsBackpackComponent::InitializeSlots(const int32 InNumberOfSlots)
 
 bool UNsBackpackComponent::GiveItemByClass(const TSoftObjectPtr<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity /**= 1*/)
 {
-    if (!InItemClass || InQuantity <= 0)
+    if (InItemClass.IsNull() || InQuantity <= 0)
     {
         return false;
     }
@@ -163,4 +169,14 @@ TArray<FNsBackpackSlot> UNsBackpackComponent::GetInventorySlots() const
 TArray<FNsBackpackSlot>& UNsBackpackComponent::GetMutableInventorySlots()
 {
     return InventorySlots;
+}
+
+void UNsBackpackComponent::OpenInventory_Implementation(class AActor* const InActor)
+{
+    // Override in children
+}
+
+void UNsBackpackComponent::CloseInventory_Implementation(class AActor* const InActor)
+{
+    // Override in children
 }

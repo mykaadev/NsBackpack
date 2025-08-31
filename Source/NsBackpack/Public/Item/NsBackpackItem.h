@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/DataTable.h"
 #include "NsBackpackTypeLibrary.h"
 #include "UObject/Object.h"
 #include "NsBackpackItem.generated.h"
@@ -30,36 +29,40 @@ public:
 #endif
     //~ End UPrimaryDataAsset Interface
 
+        
+// Variables
+public:
+
     /** The display name of the item */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Display")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item | Display")
     FText Name;
 
     /** Flavor text or a summary */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Display")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item | Display")
     FText Description;
 
     /** A gameplay tag categorizing the item */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Categorization")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item | Categorization")
     ENsBackpackItemCategory ItemType;
 
     /** How common or rare the item is */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Categorization")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item | Categorization")
     ENsBackpackItemRarity Rarity;
 
     /** The 3D model for the item in the world */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Visuals")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item | Visuals")
     TSoftObjectPtr<UStaticMesh> WorldMesh;
 
     /** The 2D UI icon */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Visuals")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item | Visuals")
     TSoftObjectPtr<UTexture2D> Icon2D;
 
     /** Maximum stack count for this item type */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stacking", meta=(ClampMin="1"))
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item | Stacking", meta=(ClampMin="1"))
     int32 StackSizeMax = 1;
 
     /** An array of fragments that build the item itself */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category="Functionality")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category="Item | Functionality")
     TArray<TObjectPtr<class UNsBackpackItemFragment>> Fragments;
 
     /** Get Fragment */

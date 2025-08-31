@@ -10,7 +10,7 @@
 /**
  * Component handling backpack and persistent item storage
  */
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+UCLASS(BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class NSBACKPACK_API UNsBackpackComponent : public UActorComponent
 {
     GENERATED_BODY()
@@ -20,6 +20,10 @@ public:
 
     /** Constructor */
     UNsBackpackComponent();
+    
+    //~ Begin UActorComponent Interface
+    virtual void BeginPlay() override;
+    //~ End UActorComponent Interface
 
     /** Initialize slots */
     void InitializeSlots(int32 NumSlots);
@@ -47,12 +51,12 @@ public:
     /** Open inventory */
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
     void OpenInventory(class AActor* InActor);
-    virtual void OpenInventory_Implementation(class AActor* const InActor) PURE_VIRTUAL(OnEnter, return; );
+    virtual void OpenInventory_Implementation(class AActor* const InActor);
 
     /** Close inventory */
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
     void CloseInventory(class AActor* InActor);
-    virtual void CloseInventory_Implementation(class AActor* const InActor) PURE_VIRTUAL(OnEnter, return; );
+    virtual void CloseInventory_Implementation(class AActor* const InActor);
 
 // Variables
 public:
