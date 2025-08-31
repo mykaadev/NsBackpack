@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-#include "GameplayTagContainer.h"
 #include "NsBackpackTypeLibrary.h"
 #include "UObject/Object.h"
 #include "NsBackpackItem.generated.h"
@@ -16,6 +15,8 @@ UCLASS(Blueprintable, BlueprintType)
 class NSBACKPACK_API UNsBackpackItemDefinition : public UPrimaryDataAsset
 {
     GENERATED_BODY()
+    
+// Functions
 public:
 
     /** Constructor */
@@ -81,32 +82,35 @@ public:
  * Definition of an item instance
  */
 UCLASS(Blueprintable, BlueprintType)
-class UNsBackpackItemInstance : public UObject
+class NSBACKPACK_API UNsBackpackItemInstance : public UObject
 {
     GENERATED_BODY()
 
+// Functions
 public:
 
     /** Constructor */
-    UNsBackpackItemInstance()
-        : Backpack(nullptr)
-    {}
+    UNsBackpackItemInstance();
 
     /** Get Item Definition */
-    class UNsBackpackItemDefinition* GetItemDefinition() const { return ItemDefinition; }
+    UFUNCTION(BlueprintCallable, Category = "Item")
+    class UNsBackpackItemDefinition* GetItemDefinition() const;
 
     /** Initializes the item and their fragments */
+    UFUNCTION(BlueprintCallable, Category = "Item")
     void Initialize(class UNsBackpackItemDefinition* Def, const int32 InQuantity = 1);
 
-    // Get the quantity of the item
-    UFUNCTION(BlueprintCallable, Category = "Item")
-    int32 GetQuatity() const { return Quantity; }
-
     /** Activate Item */
+    UFUNCTION(BlueprintCallable, Category = "Item")
     void ActivateItem();
 
     /** Deactivate Item */
+    UFUNCTION(BlueprintCallable, Category = "Item")
     void DeactivateItem();
+
+    /** Get the quantity of this item */
+    UFUNCTION(BlueprintCallable, Category = "Item")
+    int32 GetQuatity() const;
 
     /** Get the inventory that this item resides in */
     UFUNCTION(BlueprintCallable, Category = "Item")
@@ -117,7 +121,7 @@ public:
     class AActor* GetBackpackOwner() const;
 
     /** Set owning backpack */
-    void SetBackpackComponent(class UNsBackpackComponent* InBackpack) { Backpack = InBackpack; }
+    void SetBackpackComponent(class UNsBackpackComponent* InBackpack);
 
     /** Add to the stack quantity */
     void AddQuantity(int32 Amount);
@@ -148,6 +152,7 @@ private:
         return nullptr;
     }
 
+// Variables
 protected:
 
     /** Original Item definition data asset */
@@ -160,9 +165,9 @@ protected:
 
     /** Quantity of item */
     UPROPERTY(BlueprintReadOnly, Category="Item", meta=(ClampMin="1"))
-    int32 Quantity = 1;
+    int32 Quantity;
 
     /** Backpack component */
     UPROPERTY(BlueprintReadOnly)
-    class UNsBackpackComponent* Backpack;
+    TObjectPtr<class UNsBackpackComponent> BackpackComponent;
 };

@@ -1,28 +1,35 @@
 // Copyright (c) 2025 mykaa
 
 #include "NsBackpackComponent.h"
-#include "Item/NsBackpackItem.h"
-#include "NsBackpackSettings.h"
 #include "Engine/DataTable.h"
+#include "Item/NsBackpackItem.h"
 
 UNsBackpackComponent::UNsBackpackComponent()
-    : InventorySize(9)
+    : InventorySize(6)
 {
     PrimaryComponentTick.bCanEverTick = false;
     InitializeSlots(InventorySize);
-}
 
-void UNsBackpackComponent::InitializeSlots(const int32 InSlots)
-{
-    Slots.SetNum(InSlots);
-    for (int32 Index = 0; Index < Slots.Num(); ++Index)
+    for (const auto& DefaultItem : DefaultInventory)
     {
-        Slots[Index].SlotIndex = Index;
-        Slots[Index].ItemInstance = nullptr;
+        if (!DefaultItem.IsNull())
+        {
+            GiveItemByClass(DefaultItem, 1);
+        }
     }
 }
 
-bool UNsBackpackComponent::GiveItemByClass(const TSoftObjectPtr<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity)
+void UNsBackpackComponent::InitializeSlots(const int32 InNumberOfSlots)
+{
+    InventorySlots.SetNum(InNumberOfSlots);
+    for (int32 Index = 0; Index < InventorySlots.Num(); ++Index)
+    {
+        InventorySlots[Index].SlotIndex = Index;
+        InventorySlots[Index].ItemInstance = nullptr;
+    }
+}
+
+bool UNsBackpackComponent::GiveItemByClass(const TSoftObjectPtr<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity /**= 1*/)
 {
     if (!InItemClass || InQuantity <= 0)
     {
@@ -38,7 +45,7 @@ bool UNsBackpackComponent::GiveItemByClass(const TSoftObjectPtr<class UNsBackpac
     int32 Remaining = InQuantity;
 
     // Try to stack into existing stacks first
-    for (const FNsBackpackSlot& Slot : Slots)
+    for (const FNsBackpackSlot& Slot : InventorySlots)
     {
         if (Remaining <= 0)
         {
@@ -58,7 +65,7 @@ bool UNsBackpackComponent::GiveItemByClass(const TSoftObjectPtr<class UNsBackpac
     }
 
     // Place into empty slots
-    for (FNsBackpackSlot& Slot : Slots)
+    for (FNsBackpackSlot& Slot : InventorySlots)
     {
         if (Remaining <= 0)
         {
@@ -79,7 +86,7 @@ bool UNsBackpackComponent::GiveItemByClass(const TSoftObjectPtr<class UNsBackpac
     return Remaining == 0;
 }
 
-bool UNsBackpackComponent::RemoveItemByClass(const TSoftObjectPtr<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity)
+bool UNsBackpackComponent::RemoveItemByClass(const TSoftObjectPtr<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity /**= 1*/)
 {
     if (!InItemClass || InQuantity <= 0)
     {
@@ -94,7 +101,7 @@ bool UNsBackpackComponent::RemoveItemByClass(const TSoftObjectPtr<class UNsBackp
 
     int32 Remaining = InQuantity;
 
-    for (FNsBackpackSlot& Slot : Slots)
+    for (FNsBackpackSlot& Slot : InventorySlots)
     {
         if (Remaining <= 0)
         {
@@ -119,7 +126,7 @@ bool UNsBackpackComponent::RemoveItemByClass(const TSoftObjectPtr<class UNsBackp
     return Remaining == 0;
 }
 
-bool UNsBackpackComponent::FindItemByClass(const TSoftObjectPtr<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity)
+bool UNsBackpackComponent::FindItemByClass(const TSoftObjectPtr<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity /**= 1*/)
 {
     if (!InItemClass || InQuantity <= 0)
     {
@@ -133,7 +140,7 @@ bool UNsBackpackComponent::FindItemByClass(const TSoftObjectPtr<class UNsBackpac
     }
 
     int32 Count = 0;
-    for (const FNsBackpackSlot& Slot : Slots)
+    for (const FNsBackpackSlot& Slot : InventorySlots)
     {
         if (Slot.ItemInstance && Slot.ItemInstance->GetItemDefinition() == ItemDefinition)
         {
@@ -146,4 +153,14 @@ bool UNsBackpackComponent::FindItemByClass(const TSoftObjectPtr<class UNsBackpac
     }
 
     return false;
+}
+
+TArray<FNsBackpackSlot> UNsBackpackComponent::GetInventorySlots() const
+{
+    return InventorySlots;
+}
+
+TArray<FNsBackpackSlot>& UNsBackpackComponent::GetMutableInventorySlots()
+{
+    return InventorySlots;
 }

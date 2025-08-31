@@ -7,6 +7,16 @@
 #include "NsBackpackSettings.generated.h"
 
 /**
+ * Layout modes for inventory packing
+ */
+UENUM(BlueprintType)
+enum class ENsBackpackLayoutMode : uint8
+{
+    Expanded UMETA(DisplayName = "Expanded"),
+    Compact  UMETA(DisplayName = "Compact")
+};
+
+/**
  * Ns Backpack Settings
  */
 UCLASS(Config=Game, DefaultConfig, meta=(DisplayName="NsBackpack Settings"))
@@ -19,10 +29,8 @@ public:
 
     /** Constructor */
     UNsBackpackSettings()
-    {
-        CategoryName = TEXT("Plugins");
-        SectionName = TEXT("NsBackpack");
-    }
+        : LayoutMode(ENsBackpackLayoutMode::Expanded)
+    {};
 
     /** Get Game Settings */
     UFUNCTION(BlueprintCallable, Category = "Backpack Settings")
@@ -45,7 +53,12 @@ public:
 // Variables
 public:
 
-    UPROPERTY(Config, EditAnywhere, Category="Inventory")
-    TSoftObjectPtr<class UDataTable> ItemDataTable;
+    /** Default Item widget */
+    UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category="Inventory")
+    TSoftClassPtr<class UUserWidget> DefaultItemWidget;
+
+    /** Layout mode to handle the inventory creation */
+    UPROPERTY(Config, EditAnywhere, BlueprintReadWrite, Category="Inventory")
+    ENsBackpackLayoutMode LayoutMode;
 };
 

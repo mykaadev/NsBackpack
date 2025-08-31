@@ -62,7 +62,7 @@ public:
 
     /** Constructor */
     FNsBackpackSlot()
-        : SlotIndex(-1)
+        : SlotIndex(INDEX_NONE)
     {}
 };
 

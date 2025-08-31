@@ -60,6 +60,17 @@ EDataValidationResult UNsBackpackItemDefinition::IsDataValid(FDataValidationCont
  *                                        Item Instance
  ***********************************************************************************************/
 
+UNsBackpackItemInstance::UNsBackpackItemInstance()
+    : Quantity(1)
+    , BackpackComponent(nullptr)
+{
+}
+
+class UNsBackpackItemDefinition* UNsBackpackItemInstance::GetItemDefinition() const
+{
+    return ItemDefinition;
+}
+
 void UNsBackpackItemInstance::Initialize(class UNsBackpackItemDefinition* Def, const int32 InQuantity)
 {
     ItemDefinition = Def;
@@ -98,6 +109,16 @@ void UNsBackpackItemInstance::DeactivateItem()
             ItemFragments[Index]->OnDeactivation(this);
         }
     }
+}
+
+int32 UNsBackpackItemInstance::GetQuatity() const
+{
+    return Quantity;
+}
+
+void UNsBackpackItemInstance::SetBackpackComponent(class UNsBackpackComponent* InBackpack)
+{
+    BackpackComponent = InBackpack;
 }
 
 void UNsBackpackItemInstance::AddQuantity(int32 Amount)
@@ -145,14 +166,14 @@ bool UNsBackpackItemInstance::CanStackWith(const UNsBackpackItemInstance* InOthe
 
 class UNsBackpackComponent* UNsBackpackItemInstance::GetBackpackComponent() const
 {
-    return Backpack;
+    return BackpackComponent;
 }
 
 class AActor* UNsBackpackItemInstance::GetBackpackOwner() const
 {
-    if (Backpack != nullptr)
+    if (BackpackComponent != nullptr)
     {
-        if (AActor* const Owner = Backpack->GetOwner())
+        if (AActor* const Owner = BackpackComponent->GetOwner())
         {
             return Owner;
         }
