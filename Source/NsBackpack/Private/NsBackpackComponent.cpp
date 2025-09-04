@@ -1,4 +1,4 @@
-// Copyright (c) 2025 mykaa
+// Copyright (C) 2025 nulled.softworks. All rights reserved.
 
 #include "NsBackpackComponent.h"
 #include "Engine/DataTable.h"
