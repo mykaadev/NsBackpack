@@ -9,7 +9,7 @@
  * Simple class that holds item abilities
  */
 UCLASS(Blueprintable, BlueprintType)
-class UNsBackpackItemAbility : public UObject
+class NSBACKPACK_API UNsBackpackItemAbility : public UObject
 {
     GENERATED_BODY()
 

@@ -41,14 +41,6 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item | Display")
     FText Description;
 
-    /** A gameplay tag categorizing the item */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item | Categorization")
-    ENsBackpackItemCategory ItemType;
-
-    /** How common or rare the item is */
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item | Categorization")
-    ENsBackpackItemRarity Rarity;
-
     /** The 3D model for the item in the world */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item | Visuals")
     TSoftObjectPtr<UStaticMesh> WorldMesh;

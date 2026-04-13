@@ -9,7 +9,7 @@
  * Fragment that defines item Durability logic
  */
 UCLASS(DefaultToInstanced, EditInlineNew, BlueprintType, Blueprintable)
-class UNsBackpackItemFragmentDurability : public UNsBackpackItemFragment
+class NSBACKPACK_API UNsBackpackItemFragmentDurability : public UNsBackpackItemFragment
 {
     GENERATED_BODY()
 

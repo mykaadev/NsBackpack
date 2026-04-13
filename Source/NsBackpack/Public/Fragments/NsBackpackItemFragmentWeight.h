@@ -9,7 +9,7 @@
  * Fragment that defines item weight
  */
 UCLASS(DefaultToInstanced, EditInlineNew, BlueprintType, Blueprintable)
-class UNsBackpackItemFragmentWeight : public UNsBackpackItemFragment
+class NSBACKPACK_API UNsBackpackItemFragmentWeight : public UNsBackpackItemFragment
 {
     GENERATED_BODY()
 

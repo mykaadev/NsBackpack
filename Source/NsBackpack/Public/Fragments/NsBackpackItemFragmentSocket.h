@@ -9,7 +9,7 @@
  * Fragment that defines item Socket
  */
 UCLASS(DefaultToInstanced, EditInlineNew, BlueprintType, Blueprintable)
-class UNsBackpackItemFragmentSocket : public UNsBackpackItemFragment
+class NSBACKPACK_API UNsBackpackItemFragmentSocket : public UNsBackpackItemFragment
 {
     GENERATED_BODY()
 

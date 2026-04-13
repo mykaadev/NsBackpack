@@ -9,7 +9,7 @@
  * Fragment that defines item tradeable value
  */
 UCLASS(DefaultToInstanced, EditInlineNew, BlueprintType, Blueprintable)
-class UNsBackpackItemFragmentTradeable : public UNsBackpackItemFragment
+class NSBACKPACK_API UNsBackpackItemFragmentTradeable : public UNsBackpackItemFragment
 {
     GENERATED_BODY()
 

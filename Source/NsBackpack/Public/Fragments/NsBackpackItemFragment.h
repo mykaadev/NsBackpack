@@ -9,7 +9,7 @@
  * Item Fragment class
  */
 UCLASS(DefaultToInstanced, EditInlineNew, Abstract)
-class UNsBackpackItemFragment : public UObject
+class NSBACKPACK_API UNsBackpackItemFragment : public UObject
 {
     GENERATED_BODY()
 

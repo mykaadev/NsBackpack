@@ -9,7 +9,7 @@
  * Fragment that defines item Deconstruct
  */
 UCLASS(DefaultToInstanced, EditInlineNew, BlueprintType, Blueprintable)
-class UNsBackpackItemFragmentDeconstruct : public UNsBackpackItemFragment
+class NSBACKPACK_API UNsBackpackItemFragmentDeconstruct : public UNsBackpackItemFragment
 {
     GENERATED_BODY()
 

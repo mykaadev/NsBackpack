@@ -11,7 +11,7 @@
  * Fragment that defines item Consumable logic
  */
 UCLASS(DefaultToInstanced, EditInlineNew, BlueprintType, Blueprintable)
-class UNsBackpackItemFragmentConsumable : public UNsBackpackItemFragment
+class NSBACKPACK_API UNsBackpackItemFragmentConsumable : public UNsBackpackItemFragment
 {
     GENERATED_BODY()
 

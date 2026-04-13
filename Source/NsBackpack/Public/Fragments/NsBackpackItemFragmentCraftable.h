@@ -9,7 +9,7 @@
  * Fragment that defines item Craftable
  */
 UCLASS(DefaultToInstanced, EditInlineNew, BlueprintType, Blueprintable)
-class UNsBackpackItemFragmentCraftable : public UNsBackpackItemFragment
+class NSBACKPACK_API UNsBackpackItemFragmentCraftable : public UNsBackpackItemFragment
 {
     GENERATED_BODY()
 
