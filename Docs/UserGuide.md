@@ -2,105 +2,93 @@
 
 ## Purpose
 
-NsBackpack is a slot inventory. An actor gets a backpack component with a fixed number of slots. Items are data assets built from fragments, such as durability, weight, or a use ability.
+NsBackpack is a slot inventory. An actor gets a backpack component with a fixed number of slots. Each slot holds an item, a quantity, and optional item data. An item is a data asset with a name, an icon, a mesh, a stack size, and fragments that the game makes.
 
-NsBackpack holds and stacks items. It has no inventory UI, no crafting logic, no trade logic, no save support, and no replication. The game builds those on top.
+NsBackpack has no UI, no selected slot, no item use, no crafting, and no save. The game builds those on top. NsBackpack depends on no other plugin.
 
 ## Setup
 
-1. Add `NsBackpack` to the `Plugins` list of the `.uproject` file.
-2. For C++, add `"NsBackpack"` to the module dependencies in `Build.cs`.
+1. Enable `NsBackpack` in the `.uproject` file.
+2. Add `NsBackpack` to the module dependencies of the game.
+3. Add a `UNsBackpackComponent` to an actor, or make a child class of it for game features.
+4. Set `SlotCount` and `StartItems` on the component.
+
+The plugin has no project settings.
 
 ## Quick Start
 
-### 1. Make an item
-
-1. Make a data asset of class `NsBackpackItemDefinition`.
-2. Set `Name`, `Description`, `Icon2D`, and `WorldMesh`.
-3. Set `StackSizeMax`. 1 means no stacking.
-4. Add fragments in `Fragments`, for example `NsBackpackItemFragmentWeight`.
-
-### 2. Add a backpack
-
-1. Add a `NsBackpackComponent` to the actor.
-2. Set `InventorySize`. The default is 6 slots.
-3. Optional: add items to `DefaultInventory`. Each one is given one time on `BeginPlay`.
-
-### 3. Give and remove items
+1. Make a data asset of class `NsBackpackItemDefinition`. Set `DisplayName`, `Icon`, `WorldMesh`, and `MaxStack`.
+2. Add the item to the backpack:
 
 ```cpp
-Backpack->GiveItemByClass(ChipStackItem, 5);
-const bool bHasKey = Backpack->FindItemByClass(VipKeyItem, 1);
-Backpack->RemoveItemByClass(ChipStackItem, 2);
+const int32 Left = Backpack->AddItem(BoltItem, 15);
 ```
+
+`AddItem` returns the quantity that did not fit.
+
+Blueprint: call `Add Item`, `Remove Item`, `Count Item`, and `Get Slots`. Bind `On Changed` to refresh the UI.
 
 ## Common Tasks
 
-### Show the inventory
+### Add game data to an item
 
-1. Call `GetInventorySlots`.
-2. For each slot, read `ItemInstance`. A null instance is an empty slot.
-3. Read `GetItemDefinition()->Icon2D` and `GetQuatity()` for the slot widget.
+1. Make a C++ or Blueprint child class of `UNsBackpackItemFragment`. Add the fields that the game needs.
+2. Add the fragment to the `Fragments` list of the item definition.
+3. Read it with `Item->FindFragment<UMyFragment>()`, or with `Find Fragment` in Blueprint.
 
-Open and close the UI from `OpenInventory` and `CloseInventory`. They are empty events for a game to override.
+### Keep state for one item
 
-### Use an item
+Put a struct in `FNsBackpackSlot::Data`, for example the durability of one sword. A slot with data does not stack.
 
-Call `ActivateItem` on the item instance. Each fragment runs `OnActivation`.
+### Add a slot rule
 
-### Read a fragment
+Make a child class of `UNsBackpackComponent` and override `CanAccept`, for example for a weight limit or a slot for tools only. Override `CanStack` for a stack rule.
 
-```cpp
-const UNsBackpackItemFragmentWeight* const Weight = UNsBackpackItemDefinition::GetFragment<UNsBackpackItemFragmentWeight>(Definition);
-```
+### Add game events
 
-### Make a new fragment
+Override `NotifyChanged` in the child class. Call the parent first. The parent fires `OnChanged`.
 
-1. Make a C++ or Blueprint child of `NsBackpackItemFragment`.
-2. Override `OnInitialization`, `OnActivation`, `OnDeactivation`, or `CanStackWith`.
-3. Add it to an item definition.
+### Move items between slots
 
-## Fragments
+Call `MoveSlot`. The items join when the target stack has room. Else the two slots swap.
 
-| Fragment | Data | Behavior |
-|---|---|---|
-| `Ability` | `Ability` class | On activation, runs `OnExecute` on the class default object of the ability. |
-| `Consumable` | `MaxUses`, `CurrentUses` | On activation, can remove one item from the backpack. See Limits. |
-| `Durability` | `MaxDurability`, `CurrentDurability` | Sets current to max on init. No wear logic. |
-| `Weight` | `Weight` in kilograms | Data only. |
-| `Tradeable` | `BuyValue`, `SellValue` | Data only. |
-| `Craftable` | `Recipe`: item and count | Data only. |
-| `Deconstruct` | `DeconstructList`: item and count | Data only. |
-| `Socket` | `Sockets`, `MaxSockets` | Data only. |
+### Load a save
+
+Call `ResetSlots`, then `SetSlot` for each saved slot.
 
 ## Rules
 
-- Each item instance gets its own copy of the fragments. Change fragment values on the instance, not on the definition.
-- Check the return value of `GiveItemByClass`. False means that not all items fit.
-- Do not store per-player state in an ability class. The ability runs on the class default object.
+- Change the slots on the server. On a client, the change functions do nothing.
+- Do not keep a reference to a slot. Read it again after `OnChanged`.
+- Do not put game rules in the item definition. Put them in fragments.
 
 ## Settings
 
-Project Settings, "NsBackpack Settings":
+On `UNsBackpackComponent`:
 
 | Setting | Default | Effect |
 |---|---|---|
-| `DefaultItemWidget` | None | A widget class for game UI to read. The plugin does not use it. |
-| `LayoutMode` | `Expanded` | `Expanded` or `Compact`, for game UI to read. The plugin does not use it. |
+| `SlotCount` | 8 | Number of slots when play starts. |
+| `StartItems` | empty | Items that the backpack gets when play starts. |
 
-Component: `InventorySize`, `DefaultInventory`, and `InventoryWidget`. The plugin does not use `InventoryWidget`.
+On `UNsBackpackItemDefinition`:
+
+| Setting | Default | Effect |
+|---|---|---|
+| `DisplayName` | empty | Name that the UI shows. |
+| `Description` | empty | One line about the item. |
+| `Icon` | none | Picture in the UI. |
+| `WorldMesh` | none | Mesh in the world. |
+| `MaxStack` | 1 | Most items in one slot. |
+| `Fragments` | empty | Game data of the item. |
 
 ## Debug
 
-NsBackpack has no console commands or log category. Read the slots with `GetInventorySlots` from a cheat or a debug widget.
+- Read `GetSlots` in a debugger or a Blueprint print.
+- Run the test `NsBackpack.Component.Slots` in Session Frontend.
+- Data validation reports an empty fragment entry and two fragments of one class.
 
 ## Limits
 
-- `GiveItemByClass` and `RemoveItemByClass` do not roll back. If not all items fit, the ones that fit stay.
-- Stacking uses the item definition only. `CanStackWith` on fragments is not called. Two items with different durability can stack.
-- `Consumable` sets `CurrentUses` to `MaxUses` on init, then adds 1 on each use. The item is removed on the first use, whatever `MaxUses` is.
-- `DeactivateItem` on a consumable also removes one item.
-- No replication. In multiplayer, keep the backpack on the server and send the UI data to the owner client.
-- No save support. Use `NsSaveSystem` from the game to save the slots.
-- The item asset loads synchronously in `GiveItemByClass`.
-- `ENsBackpackItemRarity` and `ENsBackpackItemCategory` exist, but the item definition has no field for them.
+- The number of slots is fixed until the next `ResetSlots`.
+- The whole slot list replicates on a change. A large backpack sends more data.

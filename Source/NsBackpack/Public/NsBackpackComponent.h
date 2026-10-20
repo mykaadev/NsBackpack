@@ -4,79 +4,122 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "NsBackpackTypeLibrary.h"
+#include "NsBackpackTypes.h"
 #include "NsBackpackComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FNsBackpackChangedDelegate);
+
 /**
- * Component handling backpack and persistent item storage
+ * A fixed number of slots that hold items
+ * The server, or a backpack that does not replicate, changes the slots. The slots replicate to every machine
+ * Override Can Accept and Can Stack for game rules. Make a child class for game features, such as a selected slot
  */
-UCLASS(BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+UCLASS(BlueprintType, Blueprintable, ClassGroup = (NsBackpack), meta = (BlueprintSpawnableComponent))
 class NSBACKPACK_API UNsBackpackComponent : public UActorComponent
 {
     GENERATED_BODY()
 
 // Functions
 public:
-
     /** Constructor */
     UNsBackpackComponent();
-    
+
     //~ Begin UActorComponent Interface
     virtual void BeginPlay() override;
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
     //~ End UActorComponent Interface
 
-    /** Initialize slots */
-    void InitializeSlots(int32 NumSlots);
+    /** Empties the backpack and makes this number of slots */
+    UFUNCTION(BlueprintCallable, Category = "Backpack")
+    void ResetSlots(int32 Count);
 
-    /** Give items using the item class */
-    UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool GiveItemByClass(const TSoftObjectPtr<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity = 1);
+    /** Adds items. The stacks of the item fill first, then the empty slots. Returns the quantity that did not fit */
+    UFUNCTION(BlueprintCallable, Category = "Backpack")
+    int32 AddItem(class UNsBackpackItemDefinition* Item, int32 Quantity = 1);
 
-    /** Remove items using the item class */
-    UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool RemoveItemByClass(const TSoftObjectPtr<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity = 1);
+    /** Removes items, from the first slots first. Returns false and removes nothing when the backpack holds fewer */
+    UFUNCTION(BlueprintCallable, Category = "Backpack")
+    bool RemoveItem(class UNsBackpackItemDefinition* Item, int32 Quantity = 1);
 
-    /** Does the owner has this item */
-    UFUNCTION(BlueprintCallable, Category="Inventory")
-    bool FindItemByClass(const TSoftObjectPtr<class UNsBackpackItemDefinition> InItemClass, const int32 InQuantity = 1);
+    /** Removes items from one slot. Returns false and removes nothing when the slot holds fewer */
+    UFUNCTION(BlueprintCallable, Category = "Backpack")
+    bool RemoveFromSlot(int32 SlotIndex, int32 Quantity = 1);
 
-    /** Get inventory */
-    UFUNCTION(BlueprintCallable, Category="Inventory")
-    TArray<FNsBackpackSlot> GetInventorySlots() const;
+    /** Moves a slot onto another slot. The items join when the stack has room, else the two slots swap */
+    UFUNCTION(BlueprintCallable, Category = "Backpack")
+    bool MoveSlot(int32 FromIndex, int32 ToIndex);
 
-    /** Get mutable inventory */
-    UFUNCTION(BlueprintCallable, Category="Inventory")
-    TArray<FNsBackpackSlot>& GetMutableInventorySlots();
-    
-    /** Open inventory */
-    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
-    void OpenInventory(class AActor* InActor);
-    virtual void OpenInventory_Implementation(class AActor* const InActor);
+    /** Writes one slot, for example for a split or a load from a save. Returns false when the slot cannot take the item */
+    UFUNCTION(BlueprintCallable, Category = "Backpack")
+    bool SetSlot(int32 SlotIndex, const FNsBackpackSlot& Slot);
 
-    /** Close inventory */
-    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
-    void CloseInventory(class AActor* InActor);
-    virtual void CloseInventory_Implementation(class AActor* const InActor);
+    /** Returns the quantity of an item in every slot */
+    UFUNCTION(BlueprintPure, Category = "Backpack")
+    int32 CountItem(const class UNsBackpackItemDefinition* Item) const;
+
+    /** Returns the first slot that holds the item, or -1 */
+    UFUNCTION(BlueprintPure, Category = "Backpack")
+    int32 FindItem(const class UNsBackpackItemDefinition* Item) const;
+
+    /** Returns the first empty slot, or -1 */
+    UFUNCTION(BlueprintPure, Category = "Backpack")
+    int32 FindEmptySlot() const;
+
+    /** Returns one slot. An index out of range gives an empty slot */
+    UFUNCTION(BlueprintPure, Category = "Backpack")
+    const FNsBackpackSlot& GetSlot(int32 SlotIndex) const;
+
+    /** Returns every slot */
+    UFUNCTION(BlueprintPure, Category = "Backpack")
+    const TArray<FNsBackpackSlot>& GetSlots() const { return Slots; }
+
+    /** Returns the number of slots */
+    UFUNCTION(BlueprintPure, Category = "Backpack")
+    int32 GetSlotCount() const { return Slots.Num(); }
+
+protected:
+    /** Returns true when the slot can take the item. Override it for game rules, such as a weight limit or a slot for tools only */
+    UFUNCTION(BlueprintNativeEvent, Category = "Backpack")
+    bool CanAccept(const class UNsBackpackItemDefinition* Item, int32 SlotIndex) const;
+
+    virtual bool CanAccept_Implementation(const class UNsBackpackItemDefinition* Item, int32 SlotIndex) const;
+
+    /** Returns true when the item can join the stack in the slot. The default needs the same item and no slot data */
+    UFUNCTION(BlueprintNativeEvent, Category = "Backpack")
+    bool CanStack(const FNsBackpackSlot& Slot, const class UNsBackpackItemDefinition* Item) const;
+
+    virtual bool CanStack_Implementation(const FNsBackpackSlot& Slot, const class UNsBackpackItemDefinition* Item) const;
+
+    /** Returns true when this machine can change the slots: the server, or a backpack without an owner */
+    bool CanChange() const;
+
+    /** Fires On Changed on this machine. A child class overrides it to add its own events */
+    virtual void NotifyChanged();
+
+private:
+    /** Tells the client about new slots */
+    UFUNCTION()
+    void OnRep_Slots();
+
+    /** Returns the room left in the stack of a slot for the item */
+    int32 GetRoom(int32 SlotIndex, const class UNsBackpackItemDefinition* Item) const;
 
 // Variables
 public:
+    /** Fires on every machine after the slots change */
+    UPROPERTY(BlueprintAssignable, Category = "Backpack")
+    FNsBackpackChangedDelegate OnChanged;
 
-    /** Inventory Size */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory")
-    int32 InventorySize;
+    /** Number of slots when play starts */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Backpack", meta = (ClampMin = "0"))
+    int32 SlotCount;
 
-    /** Default Inventory */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory")
-    TArray<TSoftObjectPtr<class UNsBackpackItemDefinition>> DefaultInventory;
-
-    /** Inventory widget */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory")
-    TSoftClassPtr<class UUserWidget> InventoryWidget;
+    /** Items that the backpack gets when play starts */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Backpack")
+    TArray<FNsBackpackStartItem> StartItems;
 
 private:
-
-    /** Backpack Inventory */
-    UPROPERTY()
-    TArray<FNsBackpackSlot> InventorySlots;
+    /** The slots */
+    UPROPERTY(ReplicatedUsing = OnRep_Slots)
+    TArray<FNsBackpackSlot> Slots;
 };
-
