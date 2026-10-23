@@ -33,9 +33,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Backpack")
     void ResetSlots(int32 Count);
 
-    /** Adds items. The stacks of the item fill first, then the empty slots. Returns the quantity that did not fit */
+    /** Adds items. The stacks of the item fill first, then the empty slots. Returns the quantity that did not fit. A child class can change the placement */
     UFUNCTION(BlueprintCallable, Category = "Backpack")
-    int32 AddItem(class UNsBackpackItemDefinition* Item, int32 Quantity = 1);
+    virtual int32 AddItem(class UNsBackpackItemDefinition* Item, int32 Quantity = 1);
 
     /** Removes items, from the first slots first. Returns false and removes nothing when the backpack holds fewer */
     UFUNCTION(BlueprintCallable, Category = "Backpack")
@@ -45,9 +45,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Backpack")
     bool RemoveFromSlot(int32 SlotIndex, int32 Quantity = 1);
 
-    /** Moves a slot onto another slot. The items join when the stack has room, else the two slots swap */
+    /** Moves a slot onto another slot. The items join when the stack has room, else the two slots swap. A child class can change the move */
     UFUNCTION(BlueprintCallable, Category = "Backpack")
-    bool MoveSlot(int32 FromIndex, int32 ToIndex);
+    virtual bool MoveSlot(int32 FromIndex, int32 ToIndex);
 
     /** Writes one slot, for example for a split or a load from a save. Returns false when the slot cannot take the item */
     UFUNCTION(BlueprintCallable, Category = "Backpack")
@@ -61,9 +61,9 @@ public:
     UFUNCTION(BlueprintPure, Category = "Backpack")
     int32 FindItem(const class UNsBackpackItemDefinition* Item) const;
 
-    /** Returns the first empty slot, or -1 */
+    /** Returns the first empty slot, or -1. A child class can change what counts as empty */
     UFUNCTION(BlueprintPure, Category = "Backpack")
-    int32 FindEmptySlot() const;
+    virtual int32 FindEmptySlot() const;
 
     /** Returns one slot. An index out of range gives an empty slot */
     UFUNCTION(BlueprintPure, Category = "Backpack")

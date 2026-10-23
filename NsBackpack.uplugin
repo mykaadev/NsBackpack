@@ -18,6 +18,11 @@
 			"Name": "NsBackpack",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "NsBackpackGrid",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
 		}
 	]
 }
