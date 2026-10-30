@@ -14,9 +14,9 @@
 ### Folders
 
 - `Source/NsBackpack/Public` – `NsBackpack.h`, `NsBackpackComponent.h`, `NsBackpackItemDefinition.h`, `NsBackpackItemFragment.h`, `NsBackpackTypes.h`.
-- `Source/NsBackpack/Private` – the `.cpp` files and `Tests/NsBackpackComponentTest.cpp`.
+- `Source/NsBackpack/Private` – the `.cpp` files.
 - `Source/NsBackpackGrid/Public` – `NsBackpackGridComponent.h`, `NsBackpackGridShape.h`.
-- `Source/NsBackpackGrid/Private` – the `.cpp` files and `Tests/NsBackpackGridTest.cpp`.
+- `Source/NsBackpackGrid/Private` – the `.cpp` files.
 
 ### Main Classes
 
@@ -103,21 +103,3 @@ The `.uplugin` file lists no plugins.
 - `Slots` uses `ReplicatedUsing = OnRep_Slots`. The grid adds `GridWidth` (`Replicated`) and `Rotations` (`ReplicatedUsing = OnRep_Rotations`).
 - Each OnRep fires `OnChanged`. On a grid client, one change can fire `OnChanged` two times.
 - Every change function returns early when `CanChange()` is false. The plugin has no RPCs. The game sends change requests to the server with its own RPCs.
-
-## Testing
-
-| Test | What it checks |
-|---|---|
-| `NsBackpack.Component.Slots` | Stack fill, overflow, the remove checks, `RemoveFromSlot`, the move to an empty slot, and the swap |
-| `NsBackpack.Grid.Shapes` | One cell without a fragment, the quarter turns of a bar and an L, four turns, and a negative turn |
-| `NsBackpack.Grid.Component` | Fits with covered cells, stacks, moves over own cells, rotation, the join, blocked moves, and a fit that needs a quarter turn |
-
-The tests use `EditorContext` and `EngineFilter`. They need no world, because a component without an owner can change.
-
-Run them in **Session Frontend > Automation**, filter `NsBackpack`. Or start the editor with `-ExecCmds="Automation RunTests NsBackpack"`.
-
-## Change Rules
-
-- Do not rename `Slots`, `SlotCount`, `StartItems`, `GridWidth`, `Rotations`, or the fields of `FNsBackpackSlot` and the item definition. Saved Blueprints, assets, and replication use them by name.
-- Keep `Rotations` the same length as `Slots`. `SetRotation` and `NotifyChanged` depend on it.
-- Keep the fit check in `UNsBackpackGridComponent::CanAccept_Implementation`. `SetSlot`, `AddItem`, and `MoveSlot` of the parent call `CanAccept`, so the grid rules apply to them too.
