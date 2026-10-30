@@ -1,0 +1,14 @@
+<!-- Showcase for the website: the docs link to this file, and the site turns the list into a grid backpack. -->
+<!-- Each list item is one start stack. Stacks with the same name use the same item. data-size is the Grid Shape box (columns x rows), data-cells lists the shape cells ("x,y x,y"), data-slot is the top left cell, data-rotation is the quarter turns. -->
+<figure class="ns-backpack" data-width="6" data-height="4">
+  <figcaption>A grid backpack of 6 by 4 cells. Drag an item to a cell, or move the cursor with the arrow keys and push Enter. Push R or Rotate to turn the item. Green shows a fit and red shows no fit. Drop a Bolt on a Bolt to join the stacks.</figcaption>
+  <ul>
+    <li data-size="1x3" data-slot="0"><b>Sword</b> A box of 1 by 3 cells, in slot 0.</li>
+    <li data-size="2x2" data-slot="2"><b>Shield</b> A box of 2 by 2 cells, in slot 2.</li>
+    <li data-max-stack="10" data-quantity="6" data-slot="5"><b>Bolt</b> One cell. Max Stack 10. A stack of 6 in slot 5.</li>
+    <li data-max-stack="10" data-quantity="7" data-slot="11"><b>Bolt</b> A second stack of 7 in slot 11.</li>
+    <li data-size="2x2" data-cells="0,0 0,1 1,1" data-slot="14"><b>Boomerang</b> An L of 3 cells in a box of 2 by 2, in slot 14.</li>
+    <li data-size="1x2" data-max-stack="3" data-quantity="2" data-slot="16"><b>Potion</b> A box of 1 by 2 cells. Max Stack 3. A stack of 2 in slot 16.</li>
+  </ul>
+  <p>A slot index is a cell index, row by row from the top left. A move never swaps two items. The demo has no item data, so two stacks of the same item can always join.</p>
+</figure>

@@ -6,6 +6,8 @@ NsBackpack gives an actor an inventory of slots. Each slot holds an item, a quan
 
 NsBackpack has no UI, no selected slot, no item use, no crafting, and no save system. It has no server RPCs. Your game builds these parts on top of the backpack.
 
+[![A grid backpack of 6 by 4 cells with a sword, a shield, two stacks of bolts, a boomerang, and potions](Showcase/img/gridbackpack.png)](Showcase/GridBackpack.html)
+
 ## Setup
 
 1. Copy the `NsBackpack` folder into the `Plugins` folder of your project.
